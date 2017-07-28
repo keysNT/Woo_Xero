@@ -1,104 +1,63 @@
 <?php
+if (! defined ( 'ABSPATH' )) exit (); // Exit if accessed directly
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if (!class_exists('WC_Settings_Page'))
+    include_once dirname (WOOXERO_PATH) . '/woocommerce/includes/admin/settings/class-wc-settings-page.php';
 
-class XERO_SETTINGS extends WC_Settings_Page{
+class XERO_SETTINGS extends WC_Settings_Page {
     public function __construct(){
         $this->id    = 'xero';
-        $this->label = __( 'Xero Integration',  'xero' );
-        add_action( 'woocommerce_settings_' . $this->id, array( $this, 'output' ) );
-        add_action( 'woocommerce_settings_save_' . $this->id, array( $this, 'save' ) );
-        add_action( 'woocommerce_sections_' . $this->id, array( $this, 'output_sections' ) );
-        
-    }
-    /**
-     * Output sections
-     */
-    public function output_sections() {
-        global $current_section;
-        $sections = $this->get_sections();
-        if ( empty( $sections ) ) {
-            return;
-        }
-        echo '<ul class="subsubsub">';
-        $array_keys = array_keys( $sections );
-        echo '</ul><br class="clear" />';
-    }
-    
-    public function output(){
-        global $current_section;
-        $settings = $this->xero_field_setting();
-        WC_Admin_Settings::output_fields( $settings );
+        $this->label = __( 'Xero Integration',  'WOOXERO_TEXT_DOMAIN' );
+
+        add_filter ( 'woocommerce_settings_tabs_array', array ( $this, 'add_settings_page' ), 999 );
+        add_action ( 'woocommerce_settings_' . $this->id, array ( $this, 'output' ) );
+        add_action ( 'woocommerce_settings_save_' . $this->id, array ( $this, 'save' ) );
+
     }
     /**
      * Save settings
      */
-    public function save() {
-        global $current_section;
-
-        if( $current_section == '' ) {
-            $settings = $this->xero_field_setting();
-        } elseif ( $current_section == 'best_seller' ) {
-            $settings = $this->hnsf_best_seller_setting();
-        } else {
-            $settings = $this->hnsf_recommend_setting();
-        }
-
-        WC_Admin_Settings::save_fields( $settings );
-    }
-    
-    public function xero_field_setting(){
-        $options = '';
-        global $wpdb;
+    public function get_settings(){
 
         $options = apply_filters( 'woocommerce_xero_field_setting', array(
 
-            array(  'title' 		=> __( 'Setting fields',  'hnsf'  ),
+            array(  'title' 		=> __( 'Setting fields',  'WOOXERO_TEXT_DOMAIN'  ),
                 'type' => 'title'
             ),
 
             array(
-                'title'         => __( 'Client ID',  'hnsf'  ),
-                'id'            => 'hnsf_client_id',
+                'title'         => __( 'Consumer Key',  'WOOXERO_TEXT_DOMAIN'  ),
+                'id'            => 'xero_consumer_key',
                 'type'          => 'text'
             ),
             array(
-                'title'         => __( 'Client Secret',  'hnsf'  ),
-                'id'            => 'hnsf_client_secret',
+                'title'         => __( 'Consumer secret',  'WOOXERO_TEXT_DOMAIN'  ),
+                'id'            => 'xero_consumer_secret',
                 'type'          => 'text'
             ),
             array(
-                'title'         => __( 'Username',  'hnsf'  ),
-                'id'            => 'hnsf_username',
-                'type'          => 'text'
-            ),
-            array(
-                'title'         => __( 'Password',  'hnsf'  ),
-                'id'            => 'hnsf_password',
-                'type'          => 'text'
-            ),
-
-            array(
-                'title'         => __( 'Security Token',  'hnsf'  ),
-                'id'            => 'hnsf_security_token',
-                'type'          => 'text'
-            ),
-            array(
-                'title' => __('Sync Salesforce', 'hnsf'),
-                'id' => 'hnsf_sync_salesforce',
-                'type'  => 'select',
-                'options' => array(
-                    'auto' => 'Auto Sync Salesforce',
-                    'queue' => 'Add to Queue'
+                'title'         => __( 'App Mode',  'WOOXERO_TEXT_DOMAIN'  ),
+                'id'            => 'xero_app_mode',
+                'type'          => 'select',
+                'options' => array (
+                    'public' => __ ( 'Public', 'WOOXERO_TEXT_DOMAIN' ),
+                    'partner' => __ ( 'Partner', 'WOOXERO_TEXT_DOMAIN' ),
+                    'private' => __ ( 'Private', 'WOOXERO_TEXT_DOMAIN' ),
                 )
             ),
             array(
-                'type' => 'sectionend',
-                'id' => 'product_autorelated_options'
+                'title'         => __( 'Public Key (.cer)',  'WOOXERO_TEXT_DOMAIN'  ),
+                'id'            => 'xero_public_key',
+                'type'          => 'textarea'
+            ),
+            array(
+                'title'         => __( 'Private Key (.pem)',  'WOOXERO_TEXT_DOMAIN'  ),
+                'id'            => 'xero_private_key',
+                'type'          => 'textarea'
             ),
         ));
 
-        return apply_filters ('xero_general_setting', $options );
+        return $options;
     }
 }
 return new XERO_SETTINGS();
